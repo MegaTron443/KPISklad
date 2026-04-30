@@ -13,7 +13,9 @@ public class Program
 {
     private static AbstractWorker? _currentWorker;
     private static List<AbstractWorker> _workerList = new();
-    private static ListView? _logListView;
+    
+    // FIX: Changed from ListView to TextView to support your \n formatting!
+    private static TextView? _logTextView;
 
     public static void Main()
     {
@@ -169,7 +171,6 @@ public class Program
         var btnCheckCell = new Button() { Text = "Check Cell Content", X = 1, Y = 14 };
         var btnViewLayout = new Button() { Text = "View Full Layout", X = 1, Y = 16 };
         
-        // --- NEW DATE LOG BUTTONS ---
         var btnFilterLogs = new Button() { Text = "Filter Logs by Date", X = 1, Y = 19 };
         var btnRefreshLogs = new Button() { Text = "Show All Logs", X = 1, Y = 21 };
 
@@ -183,7 +184,6 @@ public class Program
         btnCheckCell.Accepting += (s, e) => ShowCheckCellDialog(app);
         btnViewLayout.Accepting += (s, e) => ShowStorageLayoutDialog(app);
 
-        // --- BINDING NEW LOG ACTIONS ---
         btnFilterLogs.Accepting += (s, e) => ShowFilterLogsDialog(app);
         btnRefreshLogs.Accepting += (s, e) => SyncLogs();
 
@@ -191,8 +191,15 @@ public class Program
 
         var logFrame = new FrameView() { Title = "Warehouse Transcripts", X = Pos.Right(controlsFrame), Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
 
-        _logListView = new ListView() { X = 0, Y = 0, Width = Dim.Fill(), Height = Dim.Fill() };
-        logFrame.Add(_logListView);
+        // FIX: Using TextView so it fully supports \n and multi-line formatting!
+        _logTextView = new TextView() 
+        { 
+            X = 0, Y = 0, 
+            Width = Dim.Fill(), Height = Dim.Fill(), 
+            ReadOnly = true,
+            WordWrap = true
+        };
+        logFrame.Add(_logTextView);
 
         SyncLogs();
 
@@ -382,6 +389,9 @@ public class Program
                 cargo.Description = txtDesc.Text ?? "None";
 
                 MessageBox.Query(app, "Success", "Cargo updated successfully!", "Ok");
+                
+                // Add a native log entry for edits since it isn't an official Manager method yet!
+                LogAction($"Worker {_currentWorker?.Name} edited cargo at {address}");
                 app.RequestStop();
             }
             catch (Exception ex) { MessageBox.ErrorQuery(app, "Input Error", ex.Message, "Ok"); }
@@ -481,7 +491,6 @@ public class Program
         app.Run(dialog);
     }
 
-    // --- NEW LOGIC: Ask backend for filtered dates! ---
     private static void ShowFilterLogsDialog(IApplication app)
     {
         var dialog = new Dialog() { Title = "Filter Logs by Date", Width = 50, Height = 12 };
@@ -500,18 +509,12 @@ public class Program
             if (DateTime.TryParse(txtFrom.Text ?? "", out DateTime fromDate) &&
                 DateTime.TryParse(txtTo.Text ?? "", out DateTime toDate))
             {
-                // Extend "To" date to cover the entire day until 11:59:59 PM
                 toDate = toDate.AddDays(1).AddTicks(-1);
 
-                // FIRE YOUR CUSTOM BACKEND METHOD
-                var filteredTranscripts = Log.GetFromDate(fromDate, toDate);
-
-                var formattedLogs = filteredTranscripts
-                    .Select(t => t.ToString().Replace("\n", "   |   "))
-                    .ToList();
-
-                _logListView!.SetSource(new ObservableCollection<string>(formattedLogs));
-                _logListView.SetNeedsDraw();
+                // Fetch filtered transcripts, map them natively, and assign directly to the TextView!
+                var filteredLogs = Log.GetFromDate(fromDate, toDate).Select(t => t.ToString());
+                _logTextView!.Text = string.Join("\n\n", filteredLogs);
+                _logTextView.SetNeedsDraw();
 
                 app.RequestStop();
             }
@@ -529,16 +532,26 @@ public class Program
         app.Run(dialog);
     }
 
+    // --- GUI HELPER METHODS ---
+
     private static void SyncLogs()
     {
-        if (_logListView == null) return;
+        if (_logTextView == null) return;
 
-        var formattedLogs = Log.GetAllTranscripts()
-            .Select(t => t.ToString().Replace("\n", "   |   "))
-            .ToList();
+        // Keep YOUR exact formatting, joined with double newlines for nice spacing!
+        var allLogs = Log.GetAllTranscripts().Select(t => t.ToString());
+        _logTextView.Text = string.Join("\n\n", allLogs);
+        _logTextView.SetNeedsDraw();
+    }
 
-        _logListView.SetSource(new ObservableCollection<string>(formattedLogs));
-        _logListView.SetNeedsDraw();
+    private static void LogAction(string message)
+    {
+        if (_logTextView != null)
+        {
+            string newEntry = $"[{DateTime.Now:HH:mm:ss}] {message}\n\n";
+            _logTextView.Text += newEntry;
+            _logTextView.SetNeedsDraw();
+        }
     }
 
     private static void ExpandStorageToAddress(Address addr, int capacity)
