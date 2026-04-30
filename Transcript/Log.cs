@@ -2,6 +2,8 @@ public static class Log
 {
     private static readonly List<AbstractTranscript> Transcripts;
 
+    public static List<AbstractTranscript> GetAllTranscripts() => Transcripts;
+
     static Log()
     {
         Transcripts = [];
@@ -34,5 +36,18 @@ public static class Log
                 Console.WriteLine(transcript.ToString());
             }
         }
+    }
+    
+    public static List<AbstractTranscript> GetFromDate(DateTime from, DateTime to)
+    {
+        List<AbstractTranscript> result = new();
+        foreach (var transcript in Transcripts)
+        {
+            if (transcript.DateTime >= from && transcript.DateTime <= to)
+            {
+                result.Add(transcript);
+            }
+        }
+        return result;
     }
 }
