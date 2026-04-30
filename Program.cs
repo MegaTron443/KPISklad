@@ -7,14 +7,11 @@ using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using System.Collections.ObjectModel;
 
-// (Keep all your other classes exactly as they are)
-
 public class Program
 {
     private static AbstractWorker? _currentWorker;
     private static List<AbstractWorker> _workerList = new();
     
-    // FIX: Changed from ListView to TextView to support your \n formatting!
     private static TextView? _logTextView;
 
     public static void Main()
@@ -191,7 +188,6 @@ public class Program
 
         var logFrame = new FrameView() { Title = "Warehouse Transcripts", X = Pos.Right(controlsFrame), Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
 
-        // FIX: Using TextView so it fully supports \n and multi-line formatting!
         _logTextView = new TextView() 
         { 
             X = 0, Y = 0, 
@@ -390,7 +386,6 @@ public class Program
 
                 MessageBox.Query(app, "Success", "Cargo updated successfully!", "Ok");
                 
-                // Add a native log entry for edits since it isn't an official Manager method yet!
                 LogAction($"Worker {_currentWorker?.Name} edited cargo at {address}");
                 app.RequestStop();
             }
@@ -511,7 +506,6 @@ public class Program
             {
                 toDate = toDate.AddDays(1).AddTicks(-1);
 
-                // Fetch filtered transcripts, map them natively, and assign directly to the TextView!
                 var filteredLogs = Log.GetFromDate(fromDate, toDate).Select(t => t.ToString());
                 _logTextView!.Text = string.Join("\n\n", filteredLogs);
                 _logTextView.SetNeedsDraw();
@@ -532,13 +526,11 @@ public class Program
         app.Run(dialog);
     }
 
-    // --- GUI HELPER METHODS ---
 
     private static void SyncLogs()
     {
         if (_logTextView == null) return;
 
-        // Keep YOUR exact formatting, joined with double newlines for nice spacing!
         var allLogs = Log.GetAllTranscripts().Select(t => t.ToString());
         _logTextView.Text = string.Join("\n\n", allLogs);
         _logTextView.SetNeedsDraw();
