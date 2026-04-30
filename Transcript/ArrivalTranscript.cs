@@ -1,25 +1,27 @@
 public class ArrivalTranscript : AbstractTranscript
 {
-    public Cargo Cargo { get; set; }
-    public Address Address { get; set; }
-
-    public ArrivalTranscript(DateTime dateTime, string workerName, int workerID, Cargo cargo, Address address) 
+    public ArrivalTranscript(DateTime dateTime, string workerName, int workerID, Cargo cargo, Address address)
         : base(dateTime, workerName, workerID)
     {
         Cargo = cargo;
         Address = address;
+        Add();
     }
+
+    public Cargo Cargo { get; set; }
+
+    public Address Address { get; set; }
 
     public override string ToString()
     {
-        return $"{CreateBoilerPlate()} Type: Arrival Transcript\n Cargo: {Cargo.ToString()} - Address: {Address.ToString()}";
+        return $"{CreateBoilerPlate()}Type: Arrival Transcript\n Cargo: {Cargo} - Address: {Address}";
     }
 
     public bool Add()
     {
         try
         {
-            controller.AddCargo(Address, Cargo);
+            StorageController.AddCargo(Cargo, Address);
             status = true;
             Log.AddTranscript(this);
             return true;

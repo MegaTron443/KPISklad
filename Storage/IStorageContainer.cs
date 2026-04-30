@@ -1,5 +1,6 @@
 public interface IStorageContainer
 {
     Cell? FindEmptyCell();
-    Cargo? CheckCell(Address address);
+
+    Cell? CheckCell(Address address, int depth);
 }

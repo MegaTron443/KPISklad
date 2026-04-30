@@ -1,32 +1,31 @@
 public class RemovalTranscript : AbstractTranscript
 {
-    private Cargo cargo;
-    private Cell cell;
-    public RemovalTranscript(DateTime dateTime, string workerName, int workerID, bool status)
+    private Cargo? cargo;
+    private Cell? cell;
+
+    public RemovalTranscript(DateTime dateTime, string workerName, int workerID, Address address)
+        : base(dateTime, workerName, workerID)
     {
-        this.dateTime = dateTime;
-        this.workerName = workerName;
-        this.workerID = workerID;
-        this.status = status;
+        Remove(address);
     }
 
     public override string ToString()
     {
-        return CreateBoilerPlate() + $"Type: Removal Transcript\n Cargo: {cargo.ToString()} - Cell: {cell.Address.ToString()}";
+        return $"{CreateBoilerPlate()}Type: Removal Transcript\n{((cargo != null) ? cargo : "Unknown Cargo")}\n - Cell: {((cell != null) ? cell.Address : "Unknown address")}";
     }
 
     public bool Remove(Address address)
     {
         try
         {
-            cell = controller.GetCell(address);
-            cargo = cell.Item;
-            controller.RemoveCargo(address);
+            var cellInfo = StorageController.RemoveCargo(address);
+            cargo = cellInfo.Cargo;
+            cell = cellInfo.Cell;
             status = true;
             Log.AddTranscript(this);
             return true;
         }
-        catch (Exception)
+        catch
         {
             status = false;
             Log.AddTranscript(this);

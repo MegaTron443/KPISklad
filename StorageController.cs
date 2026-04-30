@@ -1,20 +1,74 @@
 public static class StorageController
 {
-    private static Storage core;
+    public static readonly Storage Core;
+
     static StorageController()
     {
-        core = new Storage();
+        Core = new Storage([], "Main Warehouse");
     }
 
-    public static Cargo? CheckCell(Address address)
+    public static Cell? CheckCell(Address address)
     {
-        //TODO: Implement method to check the contents of a cell based on the address and return the cargo if it exists, otherwise return null.
-        return null;
+        return Core.CheckCell(address, 0);
     }
 
-    public static Address? FindEmptyCell(Address address)
+    public static (Cargo? CargoFrom, Cargo? CargoTo) MoveCargo(Address from, Address to)
     {
-        //TODO: Implement method to find an empty cell based on the address and return its location, otherwise return null.
-        return null;
+        Cell? fromCell = CheckCell(from);
+        Cell? toCell = CheckCell(to);
+
+        ArgumentNullException.ThrowIfNull(fromCell, "Source cell not found.");
+        ArgumentNullException.ThrowIfNull(toCell, "Destination cell not found.");
+
+        Cargo? cargoFrom = fromCell.Item;
+        Cargo? cargoTo = toCell.Item;
+
+        if (cargoFrom != null && cargoFrom.Size > toCell.Capacity)
+            throw new InvalidOperationException("Source cargo exceeds destination cell capacity.");
+
+        if (cargoTo != null && cargoTo.Size > fromCell.Capacity)
+            throw new InvalidOperationException("Destination cargo exceeds source cell capacity.");
+
+        fromCell.Item = cargoTo;
+        toCell.Item = cargoFrom;
+
+        return (cargoFrom, cargoTo);
+    }
+
+    public static void AddCargo(Cargo cargo, Address address)
+    {
+        Cell? cell = CheckCell(address);
+        ArgumentNullException.ThrowIfNull(cell);
+
+        cell.AddCargo(cargo);
+    }
+
+    public static (Cargo Cargo, Cell Cell) RemoveCargo(Address address)
+    {
+        Cell? cell = CheckCell(address);
+        ArgumentNullException.ThrowIfNull(cell);
+
+        Cargo? cargo = cell.Item;
+        ArgumentNullException.ThrowIfNull(cargo, "Cell is already empty.");
+
+        cell.RemoveCargo();
+
+        return (cargo, cell);
+    }
+
+    public static Address? FindEmptyCell()
+    {
+        return Core.FindEmptyCell()?.Address;
+    }
+
+    public static Address? FindEmptyCellInRange(Address startAt)
+    {
+        if (startAt.Zone.HasValue && startAt.Zone >= 0 && startAt.Zone < Core.ItemArray.Count)
+        {
+            var zone = Core.ItemArray[startAt.Zone.Value];
+            return zone.FindEmptyCell()?.Address;
+        }
+
+        return FindEmptyCell();
     }
 }

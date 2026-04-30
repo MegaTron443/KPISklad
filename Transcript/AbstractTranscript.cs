@@ -1,24 +1,22 @@
 public abstract class AbstractTranscript
 {
-    protected DateTime dateTime;
     protected string workerName;
     protected int workerID;
     protected bool status;
-    protected static StorageController controller;
-
-    public DateTime DateTime => dateTime;
 
     protected AbstractTranscript(DateTime dateTime, string workerName, int workerID)
     {
-        this.dateTime = dateTime;
+        this.DateTime = dateTime;
         this.workerName = workerName;
         this.workerID = workerID;
     }
 
-    private string CreateBoilerPlate()
-    {
-        return $"Time: {dateTime} \n Worker: {workerName}, ID: {workerID} \n Status: {(status ? "Success" : "Failure")}\n";
-    }
+    public DateTime DateTime { get; protected set; }
 
     public abstract override string ToString();
+
+    protected string CreateBoilerPlate()
+    {
+        return $"Time: {DateTime} \nWorker: {workerName}, ID: {workerID} \nStatus: {(status ? "Success" : "Failure")}\n";
+    }
 }

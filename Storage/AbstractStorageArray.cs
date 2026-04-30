@@ -1,68 +1,87 @@
-public abstract class AbstractStorageArray <T> : IStorageContainer
-{
-    public T[] itemArray;
-    public string fullName;
-    public Address Address { get; set; }
-    private bool vacant;
+using System.Collections;
+using System.Text;
 
-    public AbstractStorageArray(T[] itemArray, string fullName, Address address)
+public abstract class AbstractStorageArray<T> : IStorageContainer, IEnumerable<T>
+    where T : IStorageContainer
+{
+    public IList<T> ItemArray;
+    public string FullName;
+
+    public AbstractStorageArray(IList<T> itemArray, string fullName)
     {
-        this.itemArray = itemArray;
-        this.fullName = fullName;
-        this.Address = address;
-        this.vacant = true;
+        this.ItemArray = itemArray;
+        this.FullName = fullName;
     }
+
+    public T this[int i]
+    {
+        get
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(i);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(i, ItemArray.Count);
+            return ItemArray[i];
+        }
+
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(i);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(i, ItemArray.Count);
+            ItemArray[i] = value;
+        }
+    }
+
+    public void AddNewPlace(T container)
+    {
+        ItemArray.Add(container);
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        foreach (T item in ItemArray)
+        {
+            yield return item;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public Cell? FindEmptyCell()
     {
-        if (itemArray == null) return null;
-
-        foreach (var item in itemArray)
+        foreach (var item in ItemArray)
         {
-            if (item is Cell cell && cell.IsEmpty)
-            {
-                return cell;
-            } 
-            else if (item is IStorageContainer container) 
-            {
-                var emptyCell = container.FindEmptyCell();
-                if (emptyCell != null) return emptyCell;
-            }
+            var cell = item.FindEmptyCell();
+            if (cell != null) return cell;
         }
+
         return null;
     }
-    
-    public Cargo? CheckCell(Address address)
+
+    public Cell? CheckCell(Address address, int depth)
     {
-        if (itemArray == null) return null;
+        int? targetIndex = address[depth];
 
-        foreach (var item in itemArray)
-        {
-            if (item is Cell cell && cell.Address.Equals(address))
-                return cell.Item;
+        if (targetIndex == null || targetIndex < 0 || targetIndex >= ItemArray.Count)
+            return null;
 
-            if (item is IStorageContainer container)
-            {
-                var found = container.CheckCell(address);
-                if (found != null) return found;
-            }
-        }
-        return null;
+        var nextLevel = ItemArray[targetIndex.Value];
+
+        return nextLevel.CheckCell(address, depth + 1);
     }
 
     public override string ToString()
     {
         StringBuilder sb = new StringBuilder();
-        sb.AppendLine($"{fullName} (Address: {Address})");
+        sb.AppendLine(FullName);
 
-        if (itemArray != null)
+        if (ItemArray != null)
         {
-            foreach (var item in itemArray)
+            foreach (var item in ItemArray)
             {
                 string childContent = item?.ToString() ?? "Empty";
                 sb.AppendLine("  " + childContent.Replace("\n", "\n  "));
             }
         }
+
         return sb.ToString();
     }
 }

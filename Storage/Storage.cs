@@ -1,4 +1,7 @@
-public class Storage<Zone> : AbstractStorageArray<Zone>
+public class Storage : AbstractStorageArray<Zone>
 {
-    public Storage(Zone[] items, string name, Address addr) : base(items, name, addr) { }
+    public Storage(IList<Zone> items, string name)
+        : base(items, name)
+    {
+    }
 }

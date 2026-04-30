@@ -1,4 +1,7 @@
-public class Zone<Section> : AbstractStorageArray<Section>
+public class Zone : AbstractStorageArray<Section>
 {
-    public Zone(Section[] items, string name, Address addr) : base(items, name, addr) { }
+    public Zone(IList<Section> items, string name)
+        : base(items, name)
+    {
+    }
 }

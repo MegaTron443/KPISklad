@@ -1,4 +1,7 @@
-public class Shelf<Cell> : AbstractStorageArray<Cell>
+public class Shelf : AbstractStorageArray<Cell>
 {
-    public Shelf(Cell[] items, string name, Address addr) : base(items, name, addr) { }
+    public Shelf(IList<Cell> items, string name)
+        : base(items, name)
+    {
+    }
 }

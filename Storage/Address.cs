@@ -1,25 +1,41 @@
 public class Address
 {
-    public int? Zone { get; set; }
-    public int? Section { get; set; }
-    public int? Rack { get; set; }
-    public int? Shelf { get; set; }
-    public int? Cell { get; set; }
+    private readonly int?[] levels = new int?[5];
 
-    public override string ToString()
+    public int? Zone { get => levels[0]; set => levels[0] = value; }
+
+    public int? Section { get => levels[1]; set => levels[1] = value; }
+
+    public int? Rack { get => levels[2]; set => levels[2] = value; }
+
+    public int? Shelf { get => levels[3]; set => levels[3] = value; }
+
+    public int? Cell { get => levels[4]; set => levels[4] = value; }
+
+    public int LevelCount => levels.Length;
+
+    public int? this[int index]
     {
-        return $"{Zone}-{Section}-{Rack}-{Shelf}-{Cell}";
+        get => levels[index];
+        set => levels[index] = value;
     }
+
+    public override string ToString() => string.Join("-", levels.Select(l => l?.ToString() ?? "X"));
 
     public override bool Equals(object? obj)
     {
         if (obj is Address other)
         {
-            return Zone == other.Zone && Section == other.Section && 
-                Rack == other.Rack && Shelf == other.Shelf && Cell == other.Cell;
+            return levels.SequenceEqual(other.levels);
         }
+
         return false;
     }
 
-    public override int GetHashCode() => HashCode.Combine(Zone, Section, Rack, Shelf, Cell);
+    public override int GetHashCode()
+    {
+        var hash = default(HashCode);
+        foreach (var level in levels) hash.Add(level);
+        return hash.ToHashCode();
+    }
 }

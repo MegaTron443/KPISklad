@@ -1,33 +1,33 @@
 public static class Log
 {
-    private static List<AbstractTranscript> transcripts;
+    private static readonly List<AbstractTranscript> Transcripts;
 
     static Log()
     {
-        transcripts = new List<AbstractTranscript>();
+        Transcripts = [];
     }
 
     public static void AddTranscript(AbstractTranscript transcript)
     {
-        transcripts.Add(transcript);
+        Transcripts.Add(transcript);
     }
 
     public static void PrintTranscripts()
     {
-        foreach (var transcript in transcripts)
-        {            
+        foreach (var transcript in Transcripts)
+        {
             Console.WriteLine(transcript.ToString());
         }
     }
 
     public static void ClearTranscripts()
     {
-        transcripts.Clear();
+        Transcripts.Clear();
     }
 
     public static void PrintFromDate(DateTime from, DateTime to)
     {
-        foreach (var transcript in transcripts)
+        foreach (var transcript in Transcripts)
         {
             if (transcript.DateTime >= from && transcript.DateTime <= to)
             {
