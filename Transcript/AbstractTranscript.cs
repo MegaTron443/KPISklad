@@ -6,7 +6,7 @@ public abstract class AbstractTranscript
 
     protected AbstractTranscript(DateTime dateTime, string workerName, int workerID)
     {
-        this.DateTime = dateTime;
+        DateTime = dateTime;
         this.workerName = workerName;
         this.workerID = workerID;
     }
